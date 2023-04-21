@@ -2,6 +2,7 @@ package com.example.foundation.navigator
 
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.AnimRes
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
@@ -12,18 +13,18 @@ import com.example.foundation.utils.Event
 import com.example.foundation.views.BaseFragment
 import com.example.foundation.views.BaseScreen
 import com.example.foundation.views.HasScreenTitle
-import com.example.myapplication.R
-import com.example.myapplication.views.currentcolor.CurrentColorFragment
 
 class StackFragmentNavigator(
     private val activity: AppCompatActivity,
-   @IdRes private val containerId:Int,
-    private val initialScreenCreator:()->BaseScreen
-):Navigator {
+    @IdRes private val containerId: Int,
+    private val defaultTitle: String,
+    private val animations: Animations,
+    private val initialScreenCreator: () -> BaseScreen,
+) : Navigator {
 
     private var result: Event<Any>? = null
 
-    override fun launch(screen: BaseScreen)  {
+    override fun launch(screen: BaseScreen) {
         launchFragment(screen)
     }
 
@@ -35,12 +36,12 @@ class StackFragmentNavigator(
     }
 
     //как бы жизненные циклы нашего навигатора
-    fun onCreate(savedInstanceState: Bundle?){
+    fun onCreate(savedInstanceState: Bundle?) {
 
         if (savedInstanceState == null) {
             // define the initial screen that should be launched when app starts.
             launchFragment(
-                screen = CurrentColorFragment.Screen(),
+                screen = initialScreenCreator(),
                 addToBackStack = false
             )
         }
@@ -48,7 +49,7 @@ class StackFragmentNavigator(
         activity.supportFragmentManager.registerFragmentLifecycleCallbacks(fragmentCallbacks, false)
     }
 
-    fun onDestroy(){
+    fun onDestroy() {
         activity.supportFragmentManager.unregisterFragmentLifecycleCallbacks(fragmentCallbacks)
     }
 
@@ -62,17 +63,17 @@ class StackFragmentNavigator(
         if (addToBackStack) transaction.addToBackStack(null)
         transaction
             .setCustomAnimations(
-                R.anim.enter,
-                R.anim.exit,
-                R.anim.pop_enter,
-                R.anim.pop_exit
+                animations.enterAnim,
+                animations.exitAnim,
+                animations.popEnterAnim,
+                animations.popExitAnim
             )
-            .replace(R.id.fragmentContainer, fragment)
+            .replace(containerId, fragment)
             .commit()
     }
 
     fun notifyScreenUpdates() {
-        val f = activity.supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+        val f = activity.supportFragmentManager.findFragmentById(containerId)
 
         if (activity.supportFragmentManager.backStackEntryCount > 0) {
             // more than 1 screen -> show back button in the toolbar
@@ -85,7 +86,7 @@ class StackFragmentNavigator(
             // fragment has custom screen title -> display it
             activity.supportActionBar?.title = f.getScreenTitle()
         } else {
-            activity.supportActionBar?.title = activity.getString(R.string.app_name)
+            activity.supportActionBar?.title = defaultTitle
         }
     }
 
@@ -98,10 +99,22 @@ class StackFragmentNavigator(
     }
 
     private val fragmentCallbacks = object : FragmentManager.FragmentLifecycleCallbacks() {
-        override fun onFragmentViewCreated(fm: FragmentManager, f: Fragment, v: View, savedInstanceState: Bundle?) {
+        override fun onFragmentViewCreated(
+            fm: FragmentManager,
+            f: Fragment,
+            v: View,
+            savedInstanceState: Bundle?,
+        ) {
             notifyScreenUpdates()
             publishResults(f)
         }
     }
+
+    class Animations(
+        @AnimRes val enterAnim: Int,
+        @AnimRes val exitAnim: Int,
+        @AnimRes val popEnterAnim: Int,
+        @AnimRes val popExitAnim: Int,
+    )
 
 }
