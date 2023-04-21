@@ -2,12 +2,11 @@ package com.example.myapplication.views.currentcolor
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import com.example.myapplication.R
 import com.example.myapplication.model.colors.NamedColor
-import com.example.myapplication.views.Navigator
-import com.example.myapplication.views.UiActions
-import com.example.myapplication.views.base.BaseViewModel
+import com.example.foundation.navigator.Navigator
+import com.example.foundation.uiactions.UiActions
+import com.example.foundation.views.BaseViewModel
 import com.example.myapplication.views.changecolor.ChangeColorFragment
 import ua.cn.stu.simplemvvm.model.colors.ColorListener
 import ua.cn.stu.simplemvvm.model.colors.ColorsRepository

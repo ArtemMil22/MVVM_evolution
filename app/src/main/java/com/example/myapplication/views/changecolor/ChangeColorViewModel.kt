@@ -6,11 +6,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import com.example.myapplication.R
 import com.example.myapplication.model.colors.NamedColor
-import com.example.myapplication.views.Navigator
-import com.example.myapplication.views.UiActions
-import com.example.myapplication.views.base.BaseViewModel
+import com.example.foundation.navigator.Navigator
+import com.example.foundation.uiactions.UiActions
+import com.example.foundation.views.BaseViewModel
 import com.example.myapplication.views.changecolor.ChangeColorFragment.Screen
-import com.example.myapplication.views.currentcolor.CurrentColorFragment
 import ua.cn.stu.simplemvvm.model.colors.ColorsRepository
 
 class ChangeColorViewModel(

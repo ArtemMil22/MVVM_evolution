@@ -1,6 +1,6 @@
-package com.example.myapplication.views
+package com.example.foundation.navigator
 
-import com.example.myapplication.views.base.BaseScreen
+import com.example.foundation.views.BaseScreen
 
 /**
  * Navigation for your application

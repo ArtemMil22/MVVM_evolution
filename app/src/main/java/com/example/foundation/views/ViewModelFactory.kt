@@ -1,4 +1,4 @@
-package com.example.myapplication.views.base
+package com.example.foundation.views
 
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.AbstractSavedStateViewModelFactory

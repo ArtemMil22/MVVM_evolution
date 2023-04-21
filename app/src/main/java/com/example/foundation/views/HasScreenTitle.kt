@@ -1,6 +1,4 @@
-package com.example.myapplication.views
-
-import com.example.myapplication.views.base.BaseFragment
+package com.example.foundation.views
 
 /**
  * If your fragment wants to show custom screen title in the toolbar, implement this

@@ -1,4 +1,4 @@
-package com.example.myapplication.utils
+package com.example.foundation.utils
 
 
 class Event<T>(
