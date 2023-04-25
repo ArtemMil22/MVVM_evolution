@@ -1,37 +1,53 @@
 package com.example.myapplication.model.colors
 
 import android.graphics.Color
+import com.example.foundation.model.task.Task
+import com.example.foundation.model.task.TasksFactory
 import ua.cn.stu.simplemvvm.model.colors.ColorListener
 import ua.cn.stu.simplemvvm.model.colors.ColorsRepository
 
 /**
  * Simple in-memory implementation of [ColorsRepository]
  */
-class InMemoryColorsRepository : ColorsRepository {
+class InMemoryColorsRepository(
+    private val tasksFactory: TasksFactory,
+) : ColorsRepository {
 
-    override var currentColor: NamedColor = AVAILABLE_COLORS[0]
-        set(value) {
-            if (field != value) {
-                field = value
-                listeners.forEach { it(value) }
-            }
-        }
+    private var currentColor: NamedColor = AVAILABLE_COLORS[0]
 
     private val listeners = mutableSetOf<ColorListener>()
 
-    override fun getAvailableColors(): List<NamedColor> = AVAILABLE_COLORS
-
     override fun addListener(listener: ColorListener) {
         listeners += listener
-        listener(currentColor)
     }
 
     override fun removeListener(listener: ColorListener) {
         listeners -= listener
     }
 
-    override fun getById(id: Long): NamedColor {
-        return AVAILABLE_COLORS.first { it.id == id }
+    override fun getAvailableColors(): Task<List<NamedColor>> = tasksFactory.async {
+            Thread.sleep(1000)
+        return@async AVAILABLE_COLORS
+    }
+
+    override fun getById(id: Long): Task<NamedColor> = tasksFactory.async {
+        Thread.sleep(1000)
+        return@async AVAILABLE_COLORS.first { it.id == id }
+    }
+
+    override fun getCurrentColor(): Task<NamedColor> = tasksFactory.async {
+        Thread.sleep(1000)
+        return@async currentColor
+    }
+
+    override fun setCurrentColor(color: NamedColor): Task<Unit> = tasksFactory.async {
+        Thread.sleep(1000)
+        if(currentColor != color) {
+            //  добавим назначение текущего цвета
+            currentColor = color
+            //пройдемся по всем слушателям и вызовем их с новым цветом
+            listeners.forEach{ it(color)}
+        }
     }
 
     companion object {

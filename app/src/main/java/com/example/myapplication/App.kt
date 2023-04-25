@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.app.Application
 import com.example.foundation.BaseApplication
 import com.example.foundation.model.Repository
+import com.example.foundation.model.task.SimpleTaskFactory
 import com.example.myapplication.model.colors.InMemoryColorsRepository
 
 /**
@@ -11,11 +12,11 @@ import com.example.myapplication.model.colors.InMemoryColorsRepository
 
 class App : Application(),BaseApplication {
 
-    /**
-     * Place your repositories here, now we have only 1 repository
-     */
+    private val tasksFactory = SimpleTaskFactory()
+
     override val repositories = listOf<Repository>(
-        InMemoryColorsRepository()
+        tasksFactory,
+        InMemoryColorsRepository(tasksFactory)
     )
 
 }

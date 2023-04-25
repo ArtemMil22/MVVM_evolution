@@ -13,18 +13,19 @@ sealed class Result<T> {
             SuccessResult(mapper(this.data))
         }
     }
-
 }
+
+sealed class FinalResult<T>: Result<T>()
 
 class PendingResult<T> : Result<T>()
 
 class SuccessResult<T>(
     val data: T,
-) : Result<T>()
+) : FinalResult<T>()
 
 class ErrorResult<T>(
     val exception: Exception,
-) : Result<T>()
+) : FinalResult<T>()
 
 //Получить значение успеха [Результат],
 // если это возможно; в противном случае вернуть NULL.

@@ -1,8 +1,14 @@
 package com.example.myapplication.views.changecolor
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.Transformations
+import com.example.foundation.model.ErrorResult
+import com.example.foundation.model.FinalResult
 import com.example.foundation.model.PendingResult
 import com.example.foundation.model.SuccessResult
+import com.example.foundation.model.task.TasksFactory
 import com.example.foundation.navigator.Navigator
 import com.example.foundation.uiactions.UiActions
 import com.example.foundation.views.BaseViewModel
@@ -12,8 +18,6 @@ import com.example.foundation.views.MutableLiveResult
 import com.example.myapplication.R
 import com.example.myapplication.model.colors.NamedColor
 import com.example.myapplication.views.changecolor.ChangeColorFragment.Screen
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import ua.cn.stu.simplemvvm.model.colors.ColorsRepository
 
 class ChangeColorViewModel(
@@ -21,6 +25,7 @@ class ChangeColorViewModel(
     private val navigator: Navigator,
     private val uiActions: UiActions,
     private val colorsRepository: ColorsRepository,
+    private val tasksFactory: TasksFactory,
     savedStateHandle: SavedStateHandle,
 ) : BaseViewModel(), ColorsAdapter.Listener {
 
@@ -47,16 +52,9 @@ class ChangeColorViewModel(
         }
     }
 
-    private var mockErrror = true
-
     init {
-        viewModelScope.launch {
+        load()
 
-            delay(2000)
-            _availableColors.value = SuccessResult(colorsRepository.getAvailableColors())
-                // _availableColors.value = ErrorResult(RuntimeException())
-        }
-        // initializing MediatorLiveData
         _viewState.addSource(_availableColors) { mergeSources() }
         _viewState.addSource(_currentColorId) { mergeSources() }
         _viewState.addSource(_saveInProgress) { mergeSources() }
@@ -65,47 +63,32 @@ class ChangeColorViewModel(
     override fun onColorChosen(namedColor: NamedColor) {
         //добавить запрет на нажатие кнопки в момент прогресса
         if (_saveInProgress.value == true) return
-
         _currentColorId.value = namedColor.id
     }
 
     fun onSavePressed() {
-        viewModelScope.launch {
-            _saveInProgress.postValue(true)
-            delay(1000)
-            if (mockErrror) {
-                _saveInProgress.postValue(false)
-                uiActions.toast(uiActions.getString(R.string.error_happened))
-                mockErrror = false
-            } else {
-                val currentColorId = _currentColorId.value ?: return@launch
-                val currentColor = colorsRepository.getById(currentColorId)
-                colorsRepository.currentColor = currentColor
-                navigator.goBack(result = currentColor)
-            }
+        // показать прогресс
+        _saveInProgress.postValue(true)
+
+        tasksFactory.async {
+            //берем текущий индетификатор хранящийся в LD,
+            // код синхронный, который вызывается асинхронно
+            val currentColorId = _currentColorId.value ?: throw IllegalStateException("Color ID should not be NULL")
+            val currentColor = colorsRepository.getById(currentColorId).await()
+            colorsRepository.setCurrentColor(currentColor).await()
+            return@async currentColor
         }
+                //вызовется в главном потоке как результат асинх операции
+            .saveEnqueue(::onSaved)
+//            .saveEnqueue { onSaved(it) }
     }
     fun onCancelPressed() {
         navigator.goBack()
     }
 
     fun tryAgain() {
-        viewModelScope.launch {
-            _availableColors.postValue(PendingResult())
-            delay(2000)
-            _availableColors.postValue(
-                SuccessResult(colorsRepository.getAvailableColors())
-            )
-        }
+        load()
     }
-
-    /**
-     * [MediatorLiveData] can listen other LiveData instances (even more than 1)
-     * and combine their values.
-     * Here we listen the list of available colors ([_availableColors] live-data) + current color id
-     * ([_currentColorId] live-data), then we use both of these values in order to create a list of
-     * [NamedColorListItem], it is a list to be displayed in RecyclerView.
-     */
 
     // два источника данныз 1ый идентификатор из скрина, что галочкой отмечаем
     // 2ой с репозитория список всех доступных цветов, тут происходит объеденение
@@ -121,6 +104,23 @@ class ChangeColorViewModel(
                 showSaveButton = !saveInProgress,
                 showSaveProgressBar = saveInProgress
             )
+        }
+    }
+
+    private fun load(){
+        //запросим весь список доступных цветов
+        // , и говорим into куда его нужно положить
+        colorsRepository.getAvailableColors().into(_availableColors)
+    }
+
+    //сюда будет приходить сохраненный резалт
+    private fun onSaved(result: FinalResult<NamedColor>){
+        // уберем прогресс бар
+        _saveInProgress.value = false
+        // проверяем результат
+        when(result){
+            is SuccessResult -> navigator.goBack(result.data)
+            is ErrorResult -> uiActions.toast(uiActions.getString(R.string.error_happened))
         }
     }
 }
