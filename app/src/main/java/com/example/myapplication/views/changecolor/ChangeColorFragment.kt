@@ -13,6 +13,8 @@ import com.example.foundation.views.HasScreenTitle
 import com.example.foundation.views.BaseFragment
 import com.example.foundation.views.BaseScreen
 import com.example.foundation.views.screenViewModel
+import com.example.myapplication.views.onTryAgain
+import com.example.myapplication.views.renderSimpleResult
 
 /**
  * Screen for changing color.
@@ -22,12 +24,11 @@ import com.example.foundation.views.screenViewModel
  * 4) The current choice is saved via [SavedStateHandle] (see [ChangeColorViewModel])
  */
 class ChangeColorFragment : BaseFragment(), HasScreenTitle {
-
     /**
      * This screen has 1 argument: color ID to be displayed as selected.
      */
     class Screen(
-        val currentColorId: Long
+        val currentColorId: Long,
     ) : BaseScreen
 
     override val viewModel by screenViewModel<ChangeColorViewModel>()
@@ -37,8 +38,14 @@ class ChangeColorFragment : BaseFragment(), HasScreenTitle {
      */
     override fun getScreenTitle(): String? = viewModel.screenTitle.value
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val binding = FragmentChangeColorBinding.inflate(inflater, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        val binding = FragmentChangeColorBinding.inflate(
+            inflater, container, false
+        )
 
         val adapter = ColorsAdapter(viewModel)
         setupLayoutManager(binding, adapter)
@@ -46,27 +53,42 @@ class ChangeColorFragment : BaseFragment(), HasScreenTitle {
         binding.saveButton.setOnClickListener { viewModel.onSavePressed() }
         binding.cancelButton.setOnClickListener { viewModel.onCancelPressed() }
 
-        viewModel.colorsList.observe(viewLifecycleOwner) {
-            adapter.items = it
+        viewModel.viewState.observe(viewLifecycleOwner) { result ->
+            renderSimpleResult(binding.root, result) { viewState ->
+                adapter.items = viewState.colorsList
+                // видимость кнопок
+                binding.saveButton.visibility = if (viewState.showSaveButton) View.VISIBLE else View.INVISIBLE
+                binding.cancelButton.visibility = if (viewState.showCancelButton) View.VISIBLE else View.INVISIBLE
+                binding.saveProgressBar.visibility = if (viewState.showSaveProgressBar) View.VISIBLE else View.GONE
+            }
         }
         viewModel.screenTitle.observe(viewLifecycleOwner) {
             // if screen title is changed -> need to notify activity about updates
             notifyScreenUpdates()
         }
 
+        onTryAgain(binding.root){
+            viewModel.tryAgain()
+        }
+
         return binding.root
     }
 
-    private fun setupLayoutManager(binding: FragmentChangeColorBinding, adapter: ColorsAdapter) {
-        // waiting for list width
-        binding.colorsRecyclerView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+    private fun setupLayoutManager(
+        binding: FragmentChangeColorBinding,
+        adapter: ColorsAdapter,
+    ) {
+        // кол-во колонок от ширины списка
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object :
+            ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
-                binding.colorsRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                val width = binding.colorsRecyclerView.width
+                binding.root.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                val width = binding.root.width
                 val itemWidth = resources.getDimensionPixelSize(R.dimen.item_width)
                 val columns = width / itemWidth
                 binding.colorsRecyclerView.adapter = adapter
-                binding.colorsRecyclerView.layoutManager = GridLayoutManager(requireContext(), columns)
+                binding.colorsRecyclerView.layoutManager =
+                    GridLayoutManager(requireContext(), columns)
             }
         })
     }
