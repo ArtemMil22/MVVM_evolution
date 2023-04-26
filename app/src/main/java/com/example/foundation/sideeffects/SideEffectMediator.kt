@@ -1,7 +1,7 @@
 package com.example.foundation.sideeffects
 
-import com.example.foundation.model.task.dispatchers.Dispatcher
-import com.example.foundation.model.task.dispatchers.MainThreadDispatcher
+import com.example.foundation.model.dispatchers.Dispatcher
+import com.example.foundation.model.dispatchers.MainThreadDispatcher
 import com.example.foundation.utils.ResourceActions
 
 open class SideEffectMediator<Implementation>(

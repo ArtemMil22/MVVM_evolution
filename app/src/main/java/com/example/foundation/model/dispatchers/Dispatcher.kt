@@ -1,4 +1,4 @@
-package com.example.foundation.model.task.dispatchers
+package com.example.foundation.model.dispatchers
 
 interface Dispatcher {
 

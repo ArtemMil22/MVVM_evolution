@@ -1,4 +1,4 @@
-package com.example.foundation.model.task.dispatchers
+package com.example.foundation.model.dispatchers
 
 import android.os.Handler
 import android.os.Looper

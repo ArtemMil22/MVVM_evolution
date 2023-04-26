@@ -1,15 +1,9 @@
-package com.example.foundation.model.task.callback
+package com.example.foundation.model.coroutines
 
 import com.example.foundation.model.FinalResult
 
 typealias CancelListener = () -> Unit
 
-typealias ExecutionListener<T> = (Emitter<T>) -> Unit
-
-/**
- * Emitter instance is passed to [CallbackTask.create] as an argument so you can use it
- * for converting callbacks into [Task].
- */
 interface Emitter<T> {
 
     /**
