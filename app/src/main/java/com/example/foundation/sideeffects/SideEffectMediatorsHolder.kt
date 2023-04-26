@@ -10,14 +10,14 @@ class SideEffectMediatorsHolder {
         get() = _mediators.values.toList()
 
     /**
-     * Whether the [SideEffectMediator] of the specified class exists or not.
+     * Существует ли [SideEffectMediator] указанного класса или нет.
      */
     fun <T> contains(clazz: Class<T>): Boolean {
         return _mediators.contains(clazz)
     }
 
     /**
-     * Create and store [SideEffectMediator] by using the specified [SideEffectPlugin].
+     * Создайем и сохраняем [SideEffectMediator], используя указанный [SideEffectPlugin].
      */
     fun <Mediator, Implementation> putWithPlugin(
         applicationContext: Context,
@@ -27,8 +27,8 @@ class SideEffectMediatorsHolder {
     }
 
     /**
-     * Tie [SideEffectImplementation] with the [SideEffectMediator]. So mediator can deliver all calls
-     * to the implementation.
+     * Связываем [SideEffectImplementation] с [SideEffectMediator].
+     * Таким образом, посредник может доставлять все звонки к реализации.
      */
     fun <Mediator, Implementation> setTargetWithPlugin(
         plugin: SideEffectPlugin<Mediator, Implementation>,
@@ -42,21 +42,21 @@ class SideEffectMediatorsHolder {
     }
 
     /**
-     * Get the [SideEffectMediator] instance by its class.
+     * Получаем экземпляр [SideEffectMediator] по его классу.
      */
     fun <T> get(clazz: Class<T>): T {
         return _mediators[clazz] as T
     }
 
     /**
-     * Untie all [SideEffectImplementation] instances from all [SideEffectMediator] instances.
+     * Отвязать все экземпляры [SideEffectImplementation] от всех экземпляров [SideEffectMediator].
      */
     fun removeTargets() {
         _mediators.values.forEach { it.setTarget(null) }
     }
 
     /**
-     * Clean-up all mediators.
+     * Убрать всех посредников.
      */
     fun clear() {
         _mediators.values.forEach { it.clear() }

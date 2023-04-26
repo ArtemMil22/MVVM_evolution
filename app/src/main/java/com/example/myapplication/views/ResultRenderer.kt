@@ -11,10 +11,10 @@ import com.example.myapplication.databinding.PartResultBinding
 
 
 /**
- * Default [Result] rendering.
- * - if [result] is [PendingResult] -> only progress-bar is displayed
- * - if [result] is [ErrorResult] -> only error container is displayed
- * - if [result] is [SuccessResult] -> error container & progress-bar is hidden, all other views are visible
+ * Рендеринг по умолчанию [Результат].
+ * - если [результат] равен [PendingResult] -> отображается только прогресс-бар
+ * - если [результат] равен [ErrorResult] -> отображается только контейнер ошибок
+ * - если [результат] равен [SuccessResult] -> контейнер ошибок и индикатор выполнения скрыты, все остальные представления видны
  */
 fun <T> BaseFragment.renderSimpleResult(root: ViewGroup, result: Result<T>, onSuccess: (T) -> Unit) {
     val binding = PartResultBinding.bind(root)
@@ -38,7 +38,7 @@ fun <T> BaseFragment.renderSimpleResult(root: ViewGroup, result: Result<T>, onSu
 }
 
 /**
- * Assign onClick listener for default try-again button.
+ * прослушиватель onClick для кнопки повторной попытки по умолчанию.
  */
 fun BaseFragment.onTryAgain(root: View, onTryAgainPressed: () -> Unit) {
     root.findViewById<Button>(R.id.tryAgainButton).setOnClickListener { onTryAgainPressed() }

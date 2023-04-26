@@ -35,8 +35,6 @@ class CurrentColorViewModel(
     private val _currentColor = MutableLiveResult<NamedColor>(PendingResult())
     val currentColor: LiveResult<NamedColor> = _currentColor
 
-    // --- example of listening results via model layer
-
     init {
         viewModelScope.launch {
             colorsRepository.listenCurrentColor().collect {
@@ -55,8 +53,6 @@ class CurrentColorViewModel(
             toasts.toast(message)
         }
     }
-
-    // ---
 
     fun changeColor() {
         val currentColor = currentColor.value.takeSuccess() ?: return

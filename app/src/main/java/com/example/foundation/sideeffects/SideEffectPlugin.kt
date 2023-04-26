@@ -5,19 +5,20 @@ import android.content.Context
 interface SideEffectPlugin<Mediator, Implementation> {
 
     /**
-     * Class of side-effect mediator.
+     * Класс медиатора side-effect.
      */
     val mediatorClass: Class<Mediator>
 
     /**
-     * Create a mediator instance which acts on view-model side.
+     * Для создания экземпляра посредника, который действует
+     * на стороне модели представления.
      */
     fun createMediator(applicationContext: Context): SideEffectMediator<Implementation>
 
     /**
-     * Create an implementation for the mediator created by [createMediator] method.
-     * May return `null`. NULL-value may be useful if logic can be implemented directly in mediator
-     * (e.g. side-effect doesn't need activity instance)
+     * Для создания реализации медиатора, созданного методом [createMediator].
+     * Может возвращать `null`. NULL-значение может быть полезно, если логика может быть реализована непосредственно в посреднике.
+     * (например, побочный эффект не требует экземпляра активности)
      */
     fun createImplementation(mediator: Mediator): Implementation? = null
 

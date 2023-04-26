@@ -14,7 +14,7 @@ class DialogsSideEffectMediator : SideEffectMediator<DialogsSideEffectImpl>(), D
     override suspend fun show(dialogConfig: DialogConfig): Boolean = suspendCancellableCoroutine { continuation ->
         val emitter = continuation.toEmitter()
         if (retainedState.record != null) {
-            // for now allowing only 1 active dialog at a time
+            // на данный момент разрешено только 1 активное диалоговое окно за раз
             emitter.emit(ErrorResult(IllegalStateException("Can't launch more than 1 dialog at a time")))
             return@suspendCancellableCoroutine
         }

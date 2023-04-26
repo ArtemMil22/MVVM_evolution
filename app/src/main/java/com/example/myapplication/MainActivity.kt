@@ -13,13 +13,9 @@ import com.example.foundation.views.activity.BaseActivity
 import com.example.myapplication.views.currentcolor.CurrentColorFragment
 
 /**
- * This application is a single-activity app. MainActivity is a container
- * for all screens.
+ * MainActivity — это контейнер для всех экранов
  */
-/**
- * This application is a single-activity app. MainActivity is a container
- * for all screens.
- */
+
 class MainActivity : BaseActivity() {
 
     override fun registerPlugins(manager: SideEffectPluginsManager) = with (manager) {

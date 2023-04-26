@@ -1,10 +1,10 @@
 package com.example.foundation.views.activity
 
 /**
- * If you don't want to use [BaseActivity] for some reason (for example you have 2 or more activity
- * hierarchies then you can use this holder instead.
- * Please note that you need to call methods of [delegate] manually from your activity in this case.
- * See [ActivityDelegate] for details.
+ * Если вы по какой-то причине не хотите использовать [BaseActivity] (например, у вас есть 2 или более активности
+ * иерархии, то вместо этого можно использовать этот держатель.
+ * Обратите внимание, что в этом случае вам нужно вызывать методы [delegate] вручную из вашей активности.
+ * Подробнее см. [ActivityDelegate].
  */
 interface ActivityDelegateHolder {
 

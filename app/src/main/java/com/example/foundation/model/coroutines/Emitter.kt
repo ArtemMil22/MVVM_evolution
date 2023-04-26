@@ -7,20 +7,22 @@ typealias CancelListener = () -> Unit
 interface Emitter<T> {
 
     /**
-     * Finish the associated task with the specified result.
+     * Завершаю связанную задачу с указанным результатом.
      */
     fun emit(finalResult: FinalResult<T>)
 
     /**
-     * Assign optional cancel listener. This listener is executed when the associated task
-     * has been cancelled by [Task.cancel] call.
+     * Назначаем дополнительный прослушиватель отмены.
+     * Этот прослушиватель выполняется, когда связанная задача
+     * была отменено вызовом
      */
     fun setCancelListener(cancelListener: CancelListener)
 
     companion object {
         /**
-         * Wrap the emitter with some [onFinish] action which will be executed upon
-         * publishing result or cancelling. May be useful for cleanup logic.
+         * Оберните эмиттер некоторым действием [onFinish],
+         * которое будет выполняться при публикации результата или отмена.
+         * Может быть полезно для логики очистки.
          */
         fun <T> wrap(emitter: Emitter<T>, onFinish: () -> Unit): Emitter<T> {
             return object : Emitter<T> {

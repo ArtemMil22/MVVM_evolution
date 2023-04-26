@@ -7,8 +7,9 @@ class SideEffectPluginsManager {
         get() = _plugins
 
     /**
-     * Register a new side-effect plugin.
-     * Mediator interface specified by the plugin can be used in view-models' constructor.
+     * Зарегистрируем новый плагин side-effect.
+     * Интерфейс посредника, заданный плагином, можно использовать
+     * в конструкторе моделей представления.
      */
     fun <Mediator, Implementation> register(plugin: SideEffectPlugin<Mediator, Implementation>) {
         _plugins.add(plugin)

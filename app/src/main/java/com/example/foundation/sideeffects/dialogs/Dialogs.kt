@@ -5,7 +5,8 @@ import com.example.foundation.sideeffects.dialogs.plugin.DialogConfig
 interface Dialogs {
 
     /**
-     * Show alert dialog to the user and wait for the user choice.
+     * Для Показа диалогового окна предупреждения пользователю
+     * и дождаться выбора пользователя.
      */
    suspend fun show(dialogConfig: DialogConfig): Boolean
 

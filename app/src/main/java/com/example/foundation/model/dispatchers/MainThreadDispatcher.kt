@@ -15,5 +15,4 @@ class MainThreadDispatcher: Dispatcher {
         }
     }
 
-
 }

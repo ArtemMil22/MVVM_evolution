@@ -9,22 +9,22 @@ typealias ColorListener = (NamedColor) -> Unit
 interface ColorsRepository : Repository {
 
     /**
-     * Get the list of all available colors that may be chosen by the user.
+     * Получить список всех доступных цветов, которые может выбрать пользователь.
      */
     suspend fun getAvailableColors(): List<NamedColor>
 
     /**
-     * Get the color content by its ID
+     * Получить цветовое содержимое по его идентификатору
      */
     suspend fun getById(id: Long): NamedColor
 
     /**
-     * Get the current selected color.
+     * Получить текущий выбранный цвет.
      */
     suspend fun getCurrentColor(): NamedColor
 
     /**
-     * Set the specified color as current.
+     * Установите указанный цвет в качестве текущего.
      */
     fun setCurrentColor(color: NamedColor):Flow<Int>
 

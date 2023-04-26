@@ -11,7 +11,7 @@ open class SideEffectMediator<Implementation>(
     protected val target = ResourceActions<Implementation>(dispatcher)
 
     /**
-     * Assign/unassign the target implementation for this provder.
+     * Назначьте/отмените назначение целевой реализации для этого провайдера.
      */
     fun setTarget(target: Implementation?) {
         this.target.resource = target

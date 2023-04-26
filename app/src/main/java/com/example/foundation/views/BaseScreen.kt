@@ -3,8 +3,8 @@ package com.example.foundation.views
 import java.io.Serializable
 
 /**
- * Base class for defining screen arguments.
- * Please note that all fields inside the screen should be serializable.
+ * Базовый класс для определения аргументов экрана.
+ * Обратите внимание, что все поля внутри экрана должны быть сериализуемыми.
  */
 interface BaseScreen : Serializable{
     companion object {

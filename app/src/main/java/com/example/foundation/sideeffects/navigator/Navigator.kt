@@ -5,12 +5,12 @@ import com.example.foundation.views.BaseScreen
 interface Navigator {
 
     /**
-     * Launch a new screen at the top of back stack.
+     * Запустите новый экран в верхней части заднего стека.
      */
     fun launch(screen: BaseScreen)
 
     /**
-     * Go back to the previous screen and optionally send some results.
+     * Вернитесь к предыдущему экрану и, при желании отправьте результат.
      */
     fun goBack(result: Any? = null)
 

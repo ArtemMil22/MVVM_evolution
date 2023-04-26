@@ -10,12 +10,12 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import com.example.foundation.ARG_SCREEN
 import com.example.foundation.sideeffects.SideEffectImplementation
 import com.example.foundation.sideeffects.navigator.Navigator
 import com.example.foundation.utils.Event
 import com.example.foundation.views.BaseFragment
 import com.example.foundation.views.BaseScreen
+import com.example.foundation.views.BaseScreen.Companion.ARG_SCREEN
 import com.example.foundation.views.HasScreenTitle
 
 class StackFragmentNavigator(
@@ -41,7 +41,7 @@ class StackFragmentNavigator(
     override fun onCreate(savedInstanceState: Bundle?) {
         requireActivity().lifecycle.addObserver(this)
         if (savedInstanceState == null) {
-            // define the initial screen that should be launched when app starts.
+            // определить начальный экран, который должен запускаться при запуске приложения.
             launchFragment(
                 screen = initialScreenCreator(),
                 addToBackStack = false
@@ -73,14 +73,14 @@ class StackFragmentNavigator(
         val f = getCurrentFragment()
 
         if (requireActivity().supportFragmentManager.backStackEntryCount > 0) {
-            // more than 1 screen -> show back button in the toolbar
+            // более 1 экрана -> показать кнопку «Назад» на панели инструментов
             requireActivity().supportActionBar?.setDisplayHomeAsUpEnabled(true)
         } else {
             requireActivity().supportActionBar?.setDisplayHomeAsUpEnabled(false)
         }
 
         if (f is HasScreenTitle && f.getScreenTitle() != null) {
-            // fragment has custom screen title -> display it
+            // фрагмент имеет собственный заголовок экрана -> отображать его
             requireActivity().supportActionBar?.title = f.getScreenTitle()
         } else {
             requireActivity().supportActionBar?.title = defaultTitle
@@ -88,9 +88,9 @@ class StackFragmentNavigator(
     }
 
     private fun launchFragment(screen: BaseScreen, addToBackStack: Boolean = true) {
-        // as screen classes are inside fragments -> we can create fragment directly from screen
+        // поскольку классы экрана находятся внутри фрагментов -> мы можем создать фрагмент прямо с экрана
         val fragment = screen.javaClass.enclosingClass.newInstance() as Fragment
-        // set screen object as fragment's argument
+        // устанавливаем экранный объект в качестве аргумента фрагмента
         fragment.arguments = bundleOf(ARG_SCREEN to screen)
 
         val transaction = requireActivity().supportFragmentManager.beginTransaction()
@@ -109,7 +109,7 @@ class StackFragmentNavigator(
     private fun publishResults(fragment: Fragment) {
         val result = result?.getValue() ?: return
         if (fragment is BaseFragment) {
-            // has result that can be delivered to the screen's view-model
+            // результат, который может быть доставлен в модель представления экрана
             fragment.viewModel.onResult(result)
         }
     }

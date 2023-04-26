@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.example.foundation.sideeffects.SideEffectMediator
 import com.example.foundation.sideeffects.SideEffectMediatorsHolder
 
-const val ARG_SCREEN = "ARG_SCREEN"
+//const val ARG_SCREEN = "ARG_SCREEN"
 
 class ActivityScopeViewModel : ViewModel() {
 

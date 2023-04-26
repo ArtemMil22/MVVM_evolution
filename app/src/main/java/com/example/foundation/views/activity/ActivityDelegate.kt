@@ -13,8 +13,8 @@ import com.example.foundation.sideeffects.SideEffectPluginsManager
 import com.example.foundation.utils.viewModelCreator
 
 /**
- * Delegate that manages side-effect plugins and contains common logic.
- * The following methods should be called from activity:
+ * Делегат, который управляет плагинами побочных эффектов и содержит общую логику.
+ * Следующие методы следует вызывать из активности:
  * - [onBackPressed]
  * - [onSupportNavigateUp]
  * - [onCreate]
@@ -37,7 +37,7 @@ class ActivityDelegate(
     }
 
     /**
-     * Call this method from [AppCompatActivity.onBackPressed].
+     * Вызов этотого методa из [AppCompatActivity.onBackPressed].
      * Example:
      * ```
      * override fun onBackPressed() {
@@ -50,8 +50,8 @@ class ActivityDelegate(
     }
 
     /**
-     * Call this method from [AppCompatActivity.onSupportNavigateUp]
-     * If this method returns `null` you should call `super.onSupportNavigateUp()` if your activity.
+     * Вызовите этот метод из [AppCompatActivity.onSupportNavigateUp]
+     * Если этот метод возвращает `null`, вы должны вызвать `super.onSupportNavigateUp()` if your activity.
      * Example:
      * ```
      * override fun onSupportNavigateUp(): Boolean {
@@ -70,7 +70,7 @@ class ActivityDelegate(
     }
 
     /**
-     * Call this method from [AppCompatActivity.onCreate].
+     * Вызовите этот метод из  [AppCompatActivity.onCreate].
      */
     fun onCreate(savedInstanceState: Bundle?) {
         sideEffectPluginsManager.plugins.forEach { plugin ->
@@ -81,21 +81,21 @@ class ActivityDelegate(
     }
 
     /**
-     * Call this method from [AppCompatActivity.onSaveInstanceState]
+     * Вызовите этот метод из  [AppCompatActivity.onSaveInstanceState]
      */
     fun onSavedInstanceState(outState: Bundle) {
         implementersHolder.implementations.forEach { it.onSaveInstanceState(outState) }
     }
 
     /**
-     * Call this method from [AppCompatActivity.onActivityResult]
+     * Вызовите этот метод из  [AppCompatActivity.onActivityResult]
      */
     fun onActivityResult(requestCode: Int, responseCode: Int, data: Intent?) {
         implementersHolder.implementations.forEach { it.onActivityResult(requestCode, responseCode, data) }
     }
 
     /**
-     * Call this method from [AppCompatActivity.onRequestPermissionsResult]
+     * Вызовите этот метод из  [AppCompatActivity.onRequestPermissionsResult]
      */
     fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, granted: IntArray) {
         implementersHolder.implementations.forEach { it.onRequestPermissionsResult(requestCode, permissions, granted) }

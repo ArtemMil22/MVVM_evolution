@@ -1,7 +1,7 @@
 package com.example.foundation.sideeffects.dialogs.plugin
 
 /**
- * Configuration of alert dialog displayed by [Dialogs.show]
+ * Конфигурация диалогового окна предупреждения, отображаемого [Dialogs.show].
  */
 data class DialogConfig(
     val title: String,

@@ -9,7 +9,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /**
- * Convert coroutine [CancellableContinuation] instance into simpler [Emitter] instance.
+ * Преобразование экземпляра сопрограммы [CancellableContinuation]
+ * в более простой экземпляр [Emitter].
  */
 fun <T> CancellableContinuation<T>.toEmitter(): Emitter<T> {
 

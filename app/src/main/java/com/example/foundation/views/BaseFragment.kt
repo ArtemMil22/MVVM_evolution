@@ -11,27 +11,28 @@ import com.example.foundation.model.SuccessResult
 import com.example.foundation.views.activity.ActivityDelegateHolder
 
 //**
-// Base class for all fragments
+// Базовый класс для всех фрагментов
 abstract class BaseFragment : Fragment() {
 
     /**
-     * View-model that manages this fragment
+     * View-model которая управляет этим фрагментом
      */
     abstract val viewModel: BaseViewModel
 
     /**
-     * Call this method when activity controls (e.g. toolbar) should be re-rendered
+     * Вызовите этот метод, когда элементы управления действиями
+     * (например, панель инструментов) должны быть повторно отображены.
      */
     fun notifyScreenUpdates() {
         (requireActivity() as ActivityDelegateHolder).delegate.notifyScreenUpdates()
     }
 
     /**
-     * Hide all views in the [root] and then call one of the provided lambda functions
-     * depending on [result]:
-     * - [onPending] is called when [result] is [PendingResult]
-     * - [onSuccess] is called when [result] is [SuccessResult]
-     * - [onError] is called when [result] is [ErrorResult]
+     * Скрыть все представления в [root], а затем вызвать одну из предоставленных лямбда-функций
+     * в зависимости от [результата]:
+     * - [onPending] вызывается, когда [result] равен [PendingResult]
+     * - [onSuccess] вызывается, когда [result] равен [SuccessResult]
+     * - [onError] вызывается, когда [result] равен [ErrorResult]
      */
     fun <T> renderResult(root: ViewGroup, result: Result<T>,
                          onPending: () -> Unit,

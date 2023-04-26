@@ -10,27 +10,26 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.myapplication.R
-import com.example.myapplication.databinding.FragmentChangeColorBinding
-import com.example.foundation.views.HasScreenTitle
 import com.example.foundation.views.BaseFragment
 import com.example.foundation.views.BaseScreen
+import com.example.foundation.views.HasScreenTitle
 import com.example.foundation.views.screenViewModel
+import com.example.myapplication.R
+import com.example.myapplication.databinding.FragmentChangeColorBinding
 import com.example.myapplication.views.onTryAgain
 import com.example.myapplication.views.renderSimpleResult
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
- * Screen for changing color.
- * 1) Displays the list of available colors
- * 2) Allows choosing the desired color
- * 3) Chosen color is saved only after pressing "Save" button
- * 4) The current choice is saved via [SavedStateHandle] (see [ChangeColorViewModel])
+ * Экран для изменения цвета.
+ * 1) Отображает список доступных цветов
+ * 2) Позволяет выбрать нужный цвет
+ * 3) Выбранный цвет сохраняется только после нажатия кнопки "Сохранить"
+ * 4) Текущий выбор сохраняется через [SavedStateHandle] (см. [ChangeColorViewModel])
  */
 class ChangeColorFragment : BaseFragment(), HasScreenTitle {
     /**
-     * This screen has 1 argument: color ID to be displayed as selected.
+     * Этот экран имеет 1 аргумент: идентификатор цвета, который будет отображаться как выбранный.
      */
     class Screen(
         val currentColorId: Long,
@@ -39,7 +38,7 @@ class ChangeColorFragment : BaseFragment(), HasScreenTitle {
     override val viewModel by screenViewModel<ChangeColorViewModel>()
 
     /**
-     * Example of dynamic screen title
+     * Пример динамического заголовка экрана
      */
     override fun getScreenTitle(): String? = viewModel.screenTitle.value
 
@@ -73,7 +72,7 @@ class ChangeColorFragment : BaseFragment(), HasScreenTitle {
         }
 
         viewModel.screenTitle.observe(viewLifecycleOwner) {
-            // if screen title is changed -> need to notify activity about updates
+            // если заголовок экрана изменен -> необходимо уведомлять об обновлениях
             notifyScreenUpdates()
         }
 

@@ -1,15 +1,15 @@
 package com.example.myapplication.views.changecolor
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.asLiveData
 import com.example.foundation.model.PendingResult
+import com.example.foundation.model.Result
 import com.example.foundation.model.SuccessResult
 import com.example.foundation.sideeffects.navigator.Navigator
 import com.example.foundation.sideeffects.resources.Resources
 import com.example.foundation.sideeffects.toasts.Toasts
 import com.example.foundation.views.BaseViewModel
-import com.example.foundation.views.LiveResult
-import com.example.foundation.views.MediatorLiveResult
-import com.example.foundation.model.Result
 import com.example.myapplication.R
 import com.example.myapplication.model.colors.NamedColor
 import com.example.myapplication.views.changecolor.ChangeColorFragment.Screen
@@ -33,7 +33,7 @@ class ChangeColorViewModel(
         savedStateHandle.getMyStateFlow("currentColorId", screen.currentColorId)
     private val _saveInProgress = MutableStateFlow(false)
 
-    // main destination (contains merged values from _availableColors & _currentColorId)
+    // Объеденяем значения stateFlow
     val viewState: Flow<Result<ViewState>> = combine(
         _availableColors,
         _currentColorId,
@@ -87,13 +87,6 @@ class ChangeColorViewModel(
         load()
     }
 
-    /**
-     * [MediatorLiveData] can listen other LiveData instances (even more than 1)
-     * and combine their values.
-     * Here we listen the list of available colors ([_availableColors] live-data) + current color id
-     * ([_currentColorId] live-data) + whether save is in progress or not, then we use all of
-     * these values in order to create a [ViewState] instance, which is in its turn rendered by fragment.
-     */
     private fun mergeSources(
         colors: Result<List<NamedColor>>,
         currentColorId: Long,
@@ -115,11 +108,5 @@ class ChangeColorViewModel(
 
     private fun load() = into(_availableColors) { colorsRepository.getAvailableColors() }
 
-    data class ViewState(
-        val colorsList: List<NamedColorListItem>,
-        val showSaveButton: Boolean,
-        val showCancelButton: Boolean,
-        val showSaveProgressBar: Boolean,
-    )
 
 }

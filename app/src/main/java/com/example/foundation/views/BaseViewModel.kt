@@ -19,10 +19,10 @@ open class BaseViewModel : ViewModel() {
 
     private val coroutineContext =
         SupervisorJob()+ Dispatchers.Main.immediate + CoroutineExceptionHandler { _, throwable ->
-        // you can add some exception handling here
+        // вы можете добавить сюда обработку исключений
     }
 
-    // custom scope which cancels jobs immediately when back button is pressed
+    // настраиваемая область, которая сразу же отменяет задания при нажатии кнопки «Назад»
     protected val viewModelScope = CoroutineScope(coroutineContext)
 
     override fun onCleared() {
@@ -31,11 +31,10 @@ open class BaseViewModel : ViewModel() {
     }
 
     /**
-     * Override this method in child classes if you want to listen for results
-     * from other screens
+     * Переопределите этот метод в дочерних классах, если хотите прослушивать результаты.
+     * с других экранов
      */
     open fun onResult(result: Any) {
-
     }
 
     open fun onBackPressed(): Boolean {
@@ -44,8 +43,8 @@ open class BaseViewModel : ViewModel() {
     }
 
     /**
-     * Launch the specified suspending [block] and use its result as a valud for the
-     * provided [liveResult].
+     * Запустите указанный приостанавливающий [блок] и используйте его результат в качестве значения для
+     * при условии [liveResult].
      */
     fun <T> into(liveResult: MutableLiveResult<T>, block: suspend () -> T) {
         viewModelScope.launch {
@@ -67,6 +66,7 @@ open class BaseViewModel : ViewModel() {
         }
     }
 
+    // преобразование Flow к savedStateHandle
     fun <T> SavedStateHandle.getMyStateFlow(key: String, initialValue: T): MutableStateFlow<T> {
         val savedStateHandle = this
         val mutableFlow = MutableStateFlow(savedStateHandle[key] ?: initialValue)
@@ -82,12 +82,10 @@ open class BaseViewModel : ViewModel() {
                 mutableFlow.value = it
             }
         }
-
         return mutableFlow
     }
 
     private fun clearScope() {
         viewModelScope.cancel()
     }
-
 }

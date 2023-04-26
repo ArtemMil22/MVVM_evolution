@@ -3,7 +3,7 @@ package com.example.foundation.sideeffects.intents
 interface Intents {
 
     /**
-     * Open system settings for this application.
+     * Открываем системные настройки для application
      */
     fun openAppSettings()
 

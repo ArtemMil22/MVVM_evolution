@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.foundation.sideeffects.SideEffectPluginsManager
 
 /**
- * Base class to simplify the activity implementation.
+ * Базовый класс для упрощения реализации активности.
  */
 abstract class BaseActivity : AppCompatActivity(), ActivityDelegateHolder {
 
@@ -53,7 +53,8 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateHolder {
     }
 
     /**
-     * Use this method to add all needed side-effect plugins by using [manager].
+     *
+    Используйте этот метод, чтобы добавить все необходимые плагины побочных эффектов с помощью [manager].
      */
     abstract fun registerPlugins(manager: SideEffectPluginsManager)
 

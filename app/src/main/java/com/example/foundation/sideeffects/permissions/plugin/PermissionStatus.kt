@@ -2,17 +2,18 @@ package com.example.foundation.sideeffects.permissions.plugin
 
 enum class PermissionStatus {
     /**
-     * App can safely use features that require permission
+     * Приложение может безопасно использовать функции, требующие разрешения
      */
     GRANTED,
 
     /**
-     * App doesn't have permission
+     * Приложение не имеет разрешения
      */
     DENIED,
 
     /**
-     * App doesn't have permission and user has chosen "Don't ask again" option in the system dialog.
+     * У приложения нет разрешения, и пользователь выбрал параметр
+     * «Больше не спрашивать» в системном диалоговом окне.
      */
     DENIED_FOREVER
 }

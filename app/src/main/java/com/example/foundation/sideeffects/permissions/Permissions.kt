@@ -5,13 +5,13 @@ import com.example.foundation.sideeffects.permissions.plugin.PermissionStatus
 interface Permissions {
 
     /**
-     * Whether the app has the specified permission or not.
+     * Для проверки - Имеет ли приложение указанное разрешение или нет.
      */
     fun hasPermissions(permission: String): Boolean
 
     /**
-     * Request the specified permission.
-     * See [PermissionStatus]
+     * Запросить указанное разрешение.
+     * См. [Статус разрешения]
      */
    suspend fun requestPermission(permission: String): PermissionStatus
 
