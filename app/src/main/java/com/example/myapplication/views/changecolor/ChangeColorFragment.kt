@@ -5,7 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentChangeColorBinding
@@ -15,6 +18,8 @@ import com.example.foundation.views.BaseScreen
 import com.example.foundation.views.screenViewModel
 import com.example.myapplication.views.onTryAgain
 import com.example.myapplication.views.renderSimpleResult
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 /**
  * Screen for changing color.
@@ -53,15 +58,20 @@ class ChangeColorFragment : BaseFragment(), HasScreenTitle {
         binding.saveButton.setOnClickListener { viewModel.onSavePressed() }
         binding.cancelButton.setOnClickListener { viewModel.onCancelPressed() }
 
-        viewModel.viewState.observe(viewLifecycleOwner) { result ->
-            renderSimpleResult(binding.root, result) { viewState ->
-                adapter.items = viewState.colorsList
-                // видимость кнопок
-                binding.saveButton.visibility = if (viewState.showSaveButton) View.VISIBLE else View.INVISIBLE
-                binding.cancelButton.visibility = if (viewState.showCancelButton) View.VISIBLE else View.INVISIBLE
-                binding.saveProgressBar.visibility = if (viewState.showSaveProgressBar) View.VISIBLE else View.GONE
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.viewState.collect{ result ->
+                    renderSimpleResult(binding.root, result) { viewState ->
+                        adapter.items = viewState.colorsList
+                        // видимость кнопок
+                        binding.saveButton.visibility = if (viewState.showSaveButton) View.VISIBLE else View.INVISIBLE
+                        binding.cancelButton.visibility = if (viewState.showCancelButton) View.VISIBLE else View.INVISIBLE
+                        binding.saveProgressBar.visibility = if (viewState.showSaveProgressBar) View.VISIBLE else View.GONE
+                    }
+                }
             }
         }
+
         viewModel.screenTitle.observe(viewLifecycleOwner) {
             // if screen title is changed -> need to notify activity about updates
             notifyScreenUpdates()

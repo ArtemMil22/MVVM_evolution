@@ -1,14 +1,12 @@
 package com.example.foundation.views
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.example.foundation.model.ErrorResult
 import com.example.foundation.model.Result
 import com.example.foundation.model.SuccessResult
 import com.example.foundation.utils.Event
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
 
 typealias LiveEvent<T> = LiveData<Event<T>>
 typealias MutableLiveEvent<T> = MutableLiveData<Event<T>>
@@ -57,6 +55,35 @@ open class BaseViewModel : ViewModel() {
                 if (e !is CancellationException) liveResult.postValue(ErrorResult(e))
             }
         }
+    }
+
+    fun <T> into(stateFlow: MutableStateFlow<Result<T>>, block: suspend () -> T) {
+        viewModelScope.launch {
+            try {
+                stateFlow.value = SuccessResult(block())
+            } catch (e: Exception) {
+                if (e !is CancellationException) stateFlow.value = ErrorResult(e)
+            }
+        }
+    }
+
+    fun <T> SavedStateHandle.getMyStateFlow(key: String, initialValue: T): MutableStateFlow<T> {
+        val savedStateHandle = this
+        val mutableFlow = MutableStateFlow(savedStateHandle[key] ?: initialValue)
+
+        viewModelScope.launch {
+            mutableFlow.collect {
+                savedStateHandle[key] = it
+            }
+        }
+
+        viewModelScope.launch {
+            savedStateHandle.getLiveData<T>(key).asFlow().collect {
+                mutableFlow.value = it
+            }
+        }
+
+        return mutableFlow
     }
 
     private fun clearScope() {

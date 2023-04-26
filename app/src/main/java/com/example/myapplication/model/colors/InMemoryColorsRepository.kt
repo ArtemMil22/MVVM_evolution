@@ -4,27 +4,33 @@ import android.graphics.Color
 import com.example.foundation.model.coroutines.IoDispatcher
 import com.example.simplemvvm.model.colors.ColorListener
 import com.example.simplemvvm.model.colors.ColorsRepository
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 
 /**
  * Simple in-memory implementation of [ColorsRepository]
  */
 class InMemoryColorsRepository(
-    private val ioDispatcher: IoDispatcher
+    private val ioDispatcher: IoDispatcher,
 ) : ColorsRepository {
 
     private var currentColor: NamedColor = AVAILABLE_COLORS[0]
 
     private val listeners = mutableSetOf<ColorListener>()
 
-    override fun addListener(listener: ColorListener) {
-        listeners += listener
-    }
+    override fun listenCurrentColor(): Flow<NamedColor> = callbackFlow {
+        val listener: ColorListener = {
+            trySend(it)
+        }
+        listeners.add(listener)
 
-    override fun removeListener(listener: ColorListener) {
-        listeners -= listener
-    }
+        awaitClose {
+             listeners.remove(listener)
+        }
+    }.buffer(Channel.CONFLATED)
 
     override suspend fun getAvailableColors(): List<NamedColor> = withContext(ioDispatcher.value) {
         delay(1000)
@@ -41,13 +47,21 @@ class InMemoryColorsRepository(
         return@withContext currentColor
     }
 
-    override suspend fun setCurrentColor(color: NamedColor) = withContext(ioDispatcher.value) {
-        delay(1000)
+    override fun setCurrentColor(color: NamedColor): Flow<Int> = flow {
         if (currentColor != color) {
+            var progress = 0
+            while (progress < 100) {
+                progress += 2
+                delay(30)
+                emit(progress)
+            }
             currentColor = color
             listeners.forEach { it(color) }
+        } else {
+            emit(100)
         }
-    }
+    }.flowOn(ioDispatcher.value)
+
 
     companion object {
         private val AVAILABLE_COLORS = listOf(

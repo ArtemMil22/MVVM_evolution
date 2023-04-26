@@ -18,10 +18,8 @@ import com.example.foundation.views.MutableLiveResult
 import com.example.myapplication.R
 import com.example.myapplication.model.colors.NamedColor
 import com.example.myapplication.views.changecolor.ChangeColorFragment
-import com.example.simplemvvm.model.colors.ColorListener
 import com.example.simplemvvm.model.colors.ColorsRepository
 import kotlinx.coroutines.launch
-
 
 
 class CurrentColorViewModel(
@@ -37,20 +35,15 @@ class CurrentColorViewModel(
     private val _currentColor = MutableLiveResult<NamedColor>(PendingResult())
     val currentColor: LiveResult<NamedColor> = _currentColor
 
-    private val colorListener: ColorListener = {
-        _currentColor.postValue(SuccessResult(it))
-    }
-
     // --- example of listening results via model layer
 
     init {
-        colorsRepository.addListener(colorListener)
+        viewModelScope.launch {
+            colorsRepository.listenCurrentColor().collect {
+                _currentColor.postValue(SuccessResult(it))
+            }
+        }
         load()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        colorsRepository.removeListener(colorListener)
     }
 
     // --- example of listening results directly from the screen
