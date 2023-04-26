@@ -3,6 +3,7 @@ package com.example.myapplication.views.currentcolor
 import com.example.foundation.model.PendingResult
 import com.example.foundation.model.SuccessResult
 import com.example.foundation.model.takeSuccess
+import com.example.foundation.model.task.dispatchers.Dispatcher
 import com.example.foundation.navigator.Navigator
 import com.example.foundation.uiactions.UiActions
 import com.example.foundation.views.BaseViewModel
@@ -18,7 +19,8 @@ class CurrentColorViewModel(
     private val navigator: Navigator,
     private val uiActions: UiActions,
     private val colorsRepository: ColorsRepository,
-) : BaseViewModel() {
+    dispatcher: Dispatcher
+) : BaseViewModel(dispatcher) {
 
     private val _currentColor = MutableLiveResult<NamedColor>(PendingResult())
     val currentColor: LiveResult<NamedColor> = _currentColor

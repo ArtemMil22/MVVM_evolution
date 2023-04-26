@@ -18,22 +18,19 @@ inline fun <reified VM : ViewModel> BaseFragment.screenViewModel() = viewModels<
 
     val activityScopeViewModel = (requireActivity() as FragmentsHolder).getActivityScopeViewModel()
 
-    // forming the list of available dependencies:
-    // - singleton scope dependencies (repositories) -> from App class
-    // - activity VM scope dependencies -> from MainViewModel
-    // - screen VM scope dependencies -> screen args
-    val dependencies = listOf(screen, activityScopeViewModel) + application.repositories
+    val dependencies = listOf(screen, activityScopeViewModel) + application.singletonScopeDependencies
 
     // creating factory
     ViewModelFactory(dependencies, this)
 }
 
+@Suppress("UNCHECKED_CAST")
 class ViewModelFactory(
     private val dependencies: List<Any>,
     owner: SavedStateRegistryOwner
 ) : AbstractSavedStateViewModelFactory(owner, null) {
 
-    override fun <T : ViewModel?> create(
+    override fun <T : ViewModel> create(
         key: String,
         modelClass: Class<T>,
         handle: SavedStateHandle
@@ -62,5 +59,4 @@ class ViewModelFactory(
         }
         return args
     }
-
 }

@@ -9,6 +9,7 @@ import com.example.foundation.utils.Event
 import com.example.foundation.model.Result
 import com.example.foundation.model.task.Task
 import com.example.foundation.model.task.TaskListener
+import com.example.foundation.model.task.dispatchers.Dispatcher
 
 typealias LiveEvent<T> = LiveData<Event<T>>
 typealias MutableLiveEvent<T> = MutableLiveData<Event<T>>
@@ -17,7 +18,9 @@ typealias LiveResult<T> = LiveData<Result<T>>
 typealias MutableLiveResult<T> = MutableLiveData<Result<T>>
 typealias MediatorLiveResult<T> = MediatorLiveData<Result<T>>
 
-open class BaseViewModel : ViewModel() {
+open class BaseViewModel(
+    private val dispatcher: Dispatcher
+) : ViewModel() {
 
     //поле содержащее список задач
     private val tasks = mutableSetOf<Task<*>>()
@@ -37,7 +40,7 @@ open class BaseViewModel : ViewModel() {
 // задачу которую использовали добавим в список наших задач
         tasks.add(this)
         //задача завершилась и..
-        this.enqueue {
+        this.enqueue(dispatcher) {
             tasks.remove(this)
             listener?.invoke(it)
         }

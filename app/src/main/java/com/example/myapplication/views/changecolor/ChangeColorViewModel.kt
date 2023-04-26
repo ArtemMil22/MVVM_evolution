@@ -8,7 +8,8 @@ import com.example.foundation.model.ErrorResult
 import com.example.foundation.model.FinalResult
 import com.example.foundation.model.PendingResult
 import com.example.foundation.model.SuccessResult
-import com.example.foundation.model.task.TasksFactory
+import com.example.foundation.model.task.dispatchers.Dispatcher
+import com.example.foundation.model.task.factories.TasksFactory
 import com.example.foundation.navigator.Navigator
 import com.example.foundation.uiactions.UiActions
 import com.example.foundation.views.BaseViewModel
@@ -27,7 +28,8 @@ class ChangeColorViewModel(
     private val colorsRepository: ColorsRepository,
     private val tasksFactory: TasksFactory,
     savedStateHandle: SavedStateHandle,
-) : BaseViewModel(), ColorsAdapter.Listener {
+    dispatcher: Dispatcher
+) : BaseViewModel(dispatcher), ColorsAdapter.Listener {
 
     // 1ый и 2ой источник данных
     // галочка текущего цвета
@@ -54,7 +56,6 @@ class ChangeColorViewModel(
 
     init {
         load()
-
         _viewState.addSource(_availableColors) { mergeSources() }
         _viewState.addSource(_currentColorId) { mergeSources() }
         _viewState.addSource(_saveInProgress) { mergeSources() }
@@ -78,7 +79,7 @@ class ChangeColorViewModel(
             colorsRepository.setCurrentColor(currentColor).await()
             return@async currentColor
         }
-                //вызовется в главном потоке как результат асинх операции
+            //вызовется в главном потоке как результат асинх операции
             .saveEnqueue(::onSaved)
 //            .saveEnqueue { onSaved(it) }
     }

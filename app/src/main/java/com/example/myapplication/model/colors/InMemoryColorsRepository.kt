@@ -1,16 +1,15 @@
 package com.example.myapplication.model.colors
 
 import android.graphics.Color
+import com.example.foundation.model.ThreadUtils
 import com.example.foundation.model.task.Task
-import com.example.foundation.model.task.TasksFactory
+import com.example.foundation.model.task.factories.TasksFactory
 import ua.cn.stu.simplemvvm.model.colors.ColorListener
 import ua.cn.stu.simplemvvm.model.colors.ColorsRepository
 
-/**
- * Simple in-memory implementation of [ColorsRepository]
- */
 class InMemoryColorsRepository(
     private val tasksFactory: TasksFactory,
+    private val threadUtils: ThreadUtils
 ) : ColorsRepository {
 
     private var currentColor: NamedColor = AVAILABLE_COLORS[0]
@@ -26,22 +25,22 @@ class InMemoryColorsRepository(
     }
 
     override fun getAvailableColors(): Task<List<NamedColor>> = tasksFactory.async {
-            Thread.sleep(1000)
+            threadUtils.sleep(1000)
         return@async AVAILABLE_COLORS
     }
 
     override fun getById(id: Long): Task<NamedColor> = tasksFactory.async {
-        Thread.sleep(1000)
+        threadUtils.sleep(1000)
         return@async AVAILABLE_COLORS.first { it.id == id }
     }
 
     override fun getCurrentColor(): Task<NamedColor> = tasksFactory.async {
-        Thread.sleep(1000)
+        threadUtils.sleep(1000)
         return@async currentColor
     }
 
     override fun setCurrentColor(color: NamedColor): Task<Unit> = tasksFactory.async {
-        Thread.sleep(1000)
+        threadUtils.sleep(1000)
         if(currentColor != color) {
             //  добавим назначение текущего цвета
             currentColor = color
