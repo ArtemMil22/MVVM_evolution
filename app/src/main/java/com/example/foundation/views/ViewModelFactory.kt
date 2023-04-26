@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
 import com.example.foundation.ARG_SCREEN
 import com.example.foundation.BaseApplication
+import com.example.foundation.views.activity.ActivityDelegateHolder
 import java.lang.reflect.Constructor
 
 /**
@@ -16,9 +17,13 @@ inline fun <reified VM : ViewModel> BaseFragment.screenViewModel() = viewModels<
     val application = requireActivity().application as BaseApplication
     val screen = requireArguments().getSerializable(ARG_SCREEN) as BaseScreen
 
-    val activityScopeViewModel = (requireActivity() as FragmentsHolder).getActivityScopeViewModel()
+    val activityScopeViewModel = (requireActivity() as ActivityDelegateHolder).delegate.getActivityScopeViewModel()
 
-    val dependencies = listOf(screen, activityScopeViewModel) + application.singletonScopeDependencies
+    // forming the list of available dependencies:
+    // - singleton scope dependencies (repositories) -> from App class
+    // - activity VM scope dependencies -> from ActivityScopeViewModel
+    // - screen VM scope dependencies -> screen args
+    val dependencies = listOf(screen) + activityScopeViewModel.sideEffectMediators + application.singletonScopeDependencies
 
     // creating factory
     ViewModelFactory(dependencies, this)
@@ -59,4 +64,5 @@ class ViewModelFactory(
         }
         return args
     }
+
 }

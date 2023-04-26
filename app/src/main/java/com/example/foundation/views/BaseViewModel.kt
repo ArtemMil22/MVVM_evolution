@@ -18,40 +18,64 @@ typealias LiveResult<T> = LiveData<Result<T>>
 typealias MutableLiveResult<T> = MutableLiveData<Result<T>>
 typealias MediatorLiveResult<T> = MediatorLiveData<Result<T>>
 
+/**
+ * Base class for all view-models.
+ */
 open class BaseViewModel(
     private val dispatcher: Dispatcher
 ) : ViewModel() {
 
-    //поле содержащее список задач
     private val tasks = mutableSetOf<Task<*>>()
 
     override fun onCleared() {
         super.onCleared()
-        //проходим по списку задач и отменяем
-        tasks.forEach { it.cancel() }
-        tasks.clear()
-
+        clearTasks()
     }
 
+    /**
+     * Override this method in child classes if you want to listen for results
+     * from other screens
+     */
     open fun onResult(result: Any) {
+
     }
 
-    fun <T> Task<T>.saveEnqueue(listener: TaskListener<T>? = null) {
-// задачу которую использовали добавим в список наших задач
+    /**
+     * Override this method in child classes if you want to control go-back behaviour.
+     * Return `true` if you want to abort closing this screen
+     */
+    open fun onBackPressed(): Boolean {
+        clearTasks()
+        return false
+    }
+
+    /**
+     * Launch task asynchronously, listen for its result and
+     * automatically unsubscribe the listener in case of view-model destroying.
+     */
+    fun <T> Task<T>.safeEnqueue(listener: TaskListener<T>? = null) {
         tasks.add(this)
-        //задача завершилась и..
         this.enqueue(dispatcher) {
             tasks.remove(this)
             listener?.invoke(it)
         }
     }
 
-    // для добавления  в LD, чтобы не дублировть одинаковый код часто
-        fun <T> Task<T>.into(liveResult: MutableLiveResult<T>){
-        liveResult.value =PendingResult()
-        this.saveEnqueue {
+    /**
+     * Launch task asynchronously and map its result to the specified
+     * [liveResult].
+     * Task is cancelled automatically if view-model is going to be destroyed.
+     */
+    fun <T> Task<T>.into(liveResult: MutableLiveResult<T>) {
+        liveResult.value = PendingResult()
+        this.safeEnqueue {
             liveResult.value = it
         }
+    }
+
+    private fun clearTasks() {
+        tasks.forEach { it.cancel() }
+        tasks.clear()
     }
 
 }

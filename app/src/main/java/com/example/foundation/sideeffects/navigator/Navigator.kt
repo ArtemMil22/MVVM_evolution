@@ -1,10 +1,7 @@
-package com.example.foundation.navigator
+package com.example.foundation.sideeffects.navigator
 
 import com.example.foundation.views.BaseScreen
 
-/**
- * Navigation for your application
- */
 interface Navigator {
 
     /**
