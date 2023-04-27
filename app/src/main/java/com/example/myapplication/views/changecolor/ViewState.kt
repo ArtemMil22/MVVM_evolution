@@ -5,5 +5,9 @@ data class ViewState(
     val colorsList: List<NamedColorListItem>,
     val showSaveButton: Boolean,
     val showCancelButton: Boolean,
-    val showSaveProgressBar: Boolean
+    val showSaveProgressBar: Boolean,
+    // полосочка
+    val saveProgressPercentage: Int,
+    // отображение сообщения
+    val saveProgressPercentageMessage:String
 )
