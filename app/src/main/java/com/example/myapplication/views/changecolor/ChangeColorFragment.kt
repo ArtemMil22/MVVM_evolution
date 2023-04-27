@@ -29,7 +29,8 @@ import kotlinx.coroutines.launch
  */
 class ChangeColorFragment : BaseFragment(), HasScreenTitle {
     /**
-     * Этот экран имеет 1 аргумент: идентификатор цвета, который будет отображаться как выбранный.
+     * Этот экран имеет 1 аргумент: идентификатор цвета,
+     * который будет отображаться как выбранный.
      */
     class Screen(
         val currentColorId: Long,
@@ -58,14 +59,22 @@ class ChangeColorFragment : BaseFragment(), HasScreenTitle {
         binding.cancelButton.setOnClickListener { viewModel.onCancelPressed() }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.viewState.collect{ result ->
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.viewState.collect { result ->
                     renderSimpleResult(binding.root, result) { viewState ->
+
                         adapter.items = viewState.colorsList
                         // видимость кнопок
-                        binding.saveButton.visibility = if (viewState.showSaveButton) View.VISIBLE else View.INVISIBLE
-                        binding.cancelButton.visibility = if (viewState.showCancelButton) View.VISIBLE else View.INVISIBLE
-                        binding.saveProgressBar.visibility = if (viewState.showSaveProgressBar) View.VISIBLE else View.GONE
+                        binding.saveButton.visibility =
+                            if (viewState.showSaveButton) View.VISIBLE else View.INVISIBLE
+                        binding.cancelButton.visibility =
+                            if (viewState.showCancelButton) View.VISIBLE else View.INVISIBLE
+
+                        binding.saveProgressGroup.visibility =
+                            if (viewState.showSaveProgressBar) View.VISIBLE else View.GONE
+                        binding.saveProgressBar.progress = viewState.saveProgressPercentage
+                        binding.savingPercentageTextView.text = viewState.saveProgressPercentageMessage
+
                     }
                 }
             }
@@ -76,7 +85,7 @@ class ChangeColorFragment : BaseFragment(), HasScreenTitle {
             notifyScreenUpdates()
         }
 
-        onTryAgain(binding.root){
+        onTryAgain(binding.root) {
             viewModel.tryAgain()
         }
 
