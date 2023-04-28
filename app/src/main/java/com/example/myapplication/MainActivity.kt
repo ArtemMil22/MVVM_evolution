@@ -29,6 +29,8 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // точка входа в приложение
+        Initializer.initDependencies()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
     }

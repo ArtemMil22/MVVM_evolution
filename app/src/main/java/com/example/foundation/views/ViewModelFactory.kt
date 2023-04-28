@@ -5,7 +5,7 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
-import com.example.foundation.BaseApplication
+import com.example.foundation.SingletonScopeDependencies
 import com.example.foundation.views.BaseScreen.Companion.ARG_SCREEN
 import com.example.foundation.views.activity.ActivityDelegateHolder
 import java.lang.reflect.Constructor
@@ -14,7 +14,7 @@ import java.lang.reflect.Constructor
  * Используем этот метод для получения моделей представления из ваших фрагментов.
  */
 inline fun <reified VM : ViewModel> BaseFragment.screenViewModel() = viewModels<VM> {
-    val application = requireActivity().application as BaseApplication
+    val application = requireActivity().application
     val screen = requireArguments().getSerializable(ARG_SCREEN) as BaseScreen
 
     val activityScopeViewModel =
@@ -25,7 +25,8 @@ inline fun <reified VM : ViewModel> BaseFragment.screenViewModel() = viewModels<
     // - зависимости области действия виртуальной машины -> from ActivityScopeViewModel
     // - экранировать зависимости области виртуальной машины -> экранные аргументы
     val dependencies =
-        listOf(screen) + activityScopeViewModel.sideEffectMediators + application.singletonScopeDependencies
+        listOf(screen) + activityScopeViewModel.sideEffectMediators +
+                SingletonScopeDependencies.getSingletonScopeDependencies(application)
 
     // создание фабрики
     ViewModelFactory(dependencies, this)
