@@ -10,4 +10,5 @@ data class ViewState(
     val saveProgressPercentage: Int,
     // отображение сообщения
     val saveProgressPercentageMessage:String
+    //
 )
