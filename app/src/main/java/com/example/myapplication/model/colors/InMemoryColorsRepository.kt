@@ -1,6 +1,7 @@
 package com.example.myapplication.model.colors
 
 import android.graphics.Color
+import android.util.Log
 import com.example.foundation.model.coroutines.IoDispatcher
 import com.example.simplemvvm.model.colors.ColorListener
 import com.example.simplemvvm.model.colors.ColorsRepository
@@ -44,11 +45,13 @@ class InMemoryColorsRepository(
     }
 
     override fun setCurrentColor(color: NamedColor): Flow<Int> = flow {
+        Log.d("LoG","work setCurrentColor")
         if (currentColor != color) {
             var progress = 0
             while (progress < 100) {
                 progress += 2
                 delay(30)
+              //  if (progress > 60) throw IllegalStateException("Valhalla calling")
                 emit(progress)
             }
             currentColor = color

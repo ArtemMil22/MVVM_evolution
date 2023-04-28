@@ -7,6 +7,7 @@ import com.example.foundation.model.*
 import com.example.foundation.sideeffects.navigator.Navigator
 import com.example.foundation.sideeffects.resources.Resources
 import com.example.foundation.sideeffects.toasts.Toasts
+import com.example.foundation.utils.finiteShareIn
 import com.example.foundation.views.BaseViewModel
 import com.example.myapplication.R
 import com.example.myapplication.model.colors.NamedColor
@@ -81,8 +82,7 @@ class ChangeColorViewModel(
             val currentColor = colorsRepository.getById(currentColorId)
 
             val flow = colorsRepository.setCurrentColor(currentColor)
-                .shareIn(this, started = SharingStarted.Eagerly, replay = 1)
-                .takeWhile { it < 100 }
+                .finiteShareIn(this)
 
             val instantJob = async {
                 flow.collect { percentage ->
