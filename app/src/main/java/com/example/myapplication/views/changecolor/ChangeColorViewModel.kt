@@ -13,6 +13,7 @@ import com.example.myapplication.model.colors.NamedColor
 import com.example.myapplication.views.changecolor.ChangeColorFragment.Screen
 import com.example.simplemvvm.model.colors.ColorsRepository
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -32,11 +33,12 @@ class ChangeColorViewModel(
         savedStateHandle.getMyStateFlow(
             "currentColorId", screen.currentColorId
         )
-    // прогресс бар между экрана
+    // прогресс бар между экрана (значения приходят все время)
     private val _instantSaveInProgress = MutableStateFlow<Progress>(EmptyProgress)
     // Обновление прогрессов с разной частотой,
     // внизу будет обновляться чуть реже, тот,
     // что будет передавать значение текстовой надписи 100%
+    // (значения приходят с некоторой задержкой)
     private val _sampledSaveInProgress = MutableStateFlow<Progress>(EmptyProgress)
 
     // Объеденяем значения stateFlow
@@ -74,13 +76,29 @@ class ChangeColorViewModel(
         try {
             _instantSaveInProgress.value = PercentageProgress.START
             _sampledSaveInProgress.value = PercentageProgress.START
+
             val currentColorId = _currentColorId.value
             val currentColor = colorsRepository.getById(currentColorId)
 
+            val flow = colorsRepository.setCurrentColor(currentColor)
+                .shareIn(this, started = SharingStarted.Eagerly, replay = 1)
+                .takeWhile { it < 100 }
 
-            colorsRepository.setCurrentColor(currentColor).collect { percentage ->
-                _instantSaveInProgress.value = PercentageProgress(percentage)
+            val instantJob = async {
+                flow.collect { percentage ->
+                    _instantSaveInProgress.value = PercentageProgress(percentage)
+                }
             }
+
+            val sampledJob = async {
+                flow.sample(200).collect { percentage ->
+                    _sampledSaveInProgress.value = PercentageProgress(percentage)
+                }
+            }
+
+            instantJob.await()
+            sampledJob.await()
+
             navigator.goBack(currentColor)
         } catch (e: Exception) {
             if (e !is CancellationException) toasts.toast(resources.getString(R.string.error_happened))
