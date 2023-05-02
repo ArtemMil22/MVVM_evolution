@@ -1,5 +1,6 @@
 package com.example.myapplication.views.changecolor
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,14 +10,16 @@ import com.example.myapplication.model.colors.NamedColor
 import java.util.Collections.emptyList
 
 /**
- * Adapter for displaying the list of available colors
- * @param listener callback which notifies about user actions on items in the list, see [Listener] for details.
+ * Адаптер для отображения списка доступных цветов
+ * Обратный вызов прослушивателя @param, который уведомляет о действиях
+ * пользователя над элементами в списке, подробности в [Listener].
  */
 class ColorsAdapter(
     private val listener: Listener
 ) : RecyclerView.Adapter<ColorsAdapter.Holder>(), View.OnClickListener {
 
     var items: List<NamedColorListItem> = emptyList()
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -54,8 +57,8 @@ class ColorsAdapter(
 
     interface Listener {
         /**
-         * Called when user chooses the specified color
-         * @param namedColor color chosen by the user
+         * Вызывается, когда пользователь выбирает указанный цвет
+         * @param namedColor цвет, выбранный пользователем
          */
         fun onColorChosen(namedColor: NamedColor)
     }

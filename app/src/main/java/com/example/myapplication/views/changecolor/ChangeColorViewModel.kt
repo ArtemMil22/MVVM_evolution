@@ -1,73 +1,150 @@
 package com.example.myapplication.views.changecolor
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.asLiveData
+import com.example.foundation.model.*
+import com.example.foundation.sideeffects.navigator.Navigator
+import com.example.foundation.sideeffects.resources.Resources
+import com.example.foundation.sideeffects.toasts.Toasts
+import com.example.foundation.utils.finiteShareIn
+import com.example.foundation.views.BaseViewModel
 import com.example.myapplication.R
 import com.example.myapplication.model.colors.NamedColor
-import com.example.myapplication.views.Navigator
-import com.example.myapplication.views.UiActions
-import com.example.myapplication.views.base.BaseViewModel
 import com.example.myapplication.views.changecolor.ChangeColorFragment.Screen
-import com.example.myapplication.views.currentcolor.CurrentColorFragment
-import ua.cn.stu.simplemvvm.model.colors.ColorsRepository
+import com.example.simplemvvm.model.colors.ColorsRepository
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class ChangeColorViewModel(
     screen: Screen,
     private val navigator: Navigator,
-    private val uiActions: UiActions,
+    private val toasts: Toasts,
+    private val resources: Resources,
     private val colorsRepository: ColorsRepository,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
 ) : BaseViewModel(), ColorsAdapter.Listener {
 
     // input sources
-    private val _availableColors = MutableLiveData<List<NamedColor>>()
-    private val _currentColorId = savedStateHandle.getLiveData("currentColorId", screen.currentColorId)
+    private val _availableColors =
+        MutableStateFlow<Result<List<NamedColor>>>(PendingResult())
+    private val _currentColorId =
+        savedStateHandle.getMyStateFlow(
+            "currentColorId", screen.currentColorId
+        )
+    // прогресс бар между экрана (значения приходят все время)
+    private val _instantSaveInProgress = MutableStateFlow<Progress>(EmptyProgress)
+    // Обновление прогрессов с разной частотой,
+    // внизу будет обновляться чуть реже, тот,
+    // что будет передавать значение текстовой надписи 100%
+    // (значения приходят с некоторой задержкой)
+    private val _sampledSaveInProgress = MutableStateFlow<Progress>(EmptyProgress)
 
-    // main destination (contains merged values from _availableColors & _currentColorId)
-    private val _colorsList = MediatorLiveData<List<NamedColorListItem>>()
-    val colorsList: LiveData<List<NamedColorListItem>> = _colorsList
+    // Объеденяем значения stateFlow
+    val viewState: Flow<Result<ViewState>> = combine(
+        _availableColors,
+        _currentColorId,
+        _instantSaveInProgress,
+        _sampledSaveInProgress,
+        ::mergeSources
+    )
 
-    // side destination, also the same result can be achieved by using Transformations.map() function.
-    private val _screenTitle = MutableLiveData<String>()
-    val screenTitle: LiveData<String> = _screenTitle
+    val screenTitle: LiveData<String> = viewState
+        .map { result ->
+            return@map if (result is SuccessResult) {
+                val currentColor = result.data.colorsList.first { it.selected }
+                resources.getString(
+                    R.string.change_color_screen_title,
+                    currentColor.namedColor.name
+                )
+            } else {
+                resources.getString(R.string.change_color_screen_title_simple)
+            }
+        }.asLiveData()
 
     init {
-        _availableColors.value = colorsRepository.getAvailableColors()
-        // initializing MediatorLiveData
-        _colorsList.addSource(_availableColors) { mergeSources() }
-        _colorsList.addSource(_currentColorId) { mergeSources() }
+        load()
     }
 
     override fun onColorChosen(namedColor: NamedColor) {
+        if (_instantSaveInProgress.value.isInProgress()) return
         _currentColorId.value = namedColor.id
     }
 
-    fun onSavePressed() {
-        val currentColorId = _currentColorId.value ?: return
-        val currentColor = colorsRepository.getById(currentColorId)
-        colorsRepository.currentColor = currentColor
-        navigator.goBack(result = currentColor)
+    fun onSavePressed() = viewModelScope.launch {
+        try {
+            _instantSaveInProgress.value = PercentageProgress.START
+            _sampledSaveInProgress.value = PercentageProgress.START
+
+            val currentColorId = _currentColorId.value
+            val currentColor = colorsRepository.getById(currentColorId)
+
+            val flow = colorsRepository.setCurrentColor(currentColor)
+                .finiteShareIn(this)
+
+            val instantJob = async {
+                flow.collect { percentage ->
+                    _instantSaveInProgress.value = PercentageProgress(percentage)
+                }
+            }
+
+            val sampledJob = async {
+                flow.sample(200).collect { percentage ->
+                    _sampledSaveInProgress.value = PercentageProgress(percentage)
+                }
+            }
+
+            instantJob.await()
+            sampledJob.await()
+
+            navigator.goBack(currentColor)
+        } catch (e: Exception) {
+            if (e !is CancellationException) toasts.toast(resources.getString(R.string.error_happened))
+        } finally {
+            _instantSaveInProgress.value = EmptyProgress
+            _sampledSaveInProgress.value = EmptyProgress
+        }
     }
 
     fun onCancelPressed() {
         navigator.goBack()
     }
 
-    /**
-     * [MediatorLiveData] can listen other LiveData instances (even more than 1)
-     * and combine their values.
-     * Here we listen the list of available colors ([_availableColors] live-data) + current color id
-     * ([_currentColorId] live-data), then we use both of these values in order to create a list of
-     * [NamedColorListItem], it is a list to be displayed in RecyclerView.
-     */
-    private fun mergeSources() {
-        val colors = _availableColors.value ?: return
-        val currentColorId = _currentColorId.value ?: return
-        val currentColor = colors.first { it.id == currentColorId }
-        _colorsList.value = colors.map { NamedColorListItem(it, currentColorId == it.id) }
-        _screenTitle.value = uiActions.getString(R.string.change_color_screen_title, currentColor.name)
+    fun tryAgain() {
+        load()
     }
+
+    private fun mergeSources(
+        colors: Result<List<NamedColor>>,
+        currentColorId: Long,
+        instantInProgress: Progress,
+        sampledSaveInProgress: Progress
+    ): Result<ViewState> {
+
+        // map Result<List<NamedColor>> to Result<ViewState>
+        return colors.map { colorsList ->
+            ViewState(
+                // map List<NamedColor> to List<NamedColorListItem>
+                colorsList = colorsList.map {
+                    NamedColorListItem(it, currentColorId == it.id)
+                                            },
+                showSaveButton = !instantInProgress.isInProgress(),
+                showCancelButton = !instantInProgress.isInProgress(),
+                showSaveProgressBar = instantInProgress.isInProgress(),
+
+                saveProgressPercentage = instantInProgress.getPercentage(),
+                saveProgressPercentageMessage = resources.getString(
+                    R.string.percentage_value,
+                    sampledSaveInProgress.getPercentage()
+                )
+
+            )
+        }
+    }
+
+    private fun load() = into(_availableColors) { colorsRepository.getAvailableColors() }
+
 
 }

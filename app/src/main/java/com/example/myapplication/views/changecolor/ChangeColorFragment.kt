@@ -5,40 +5,52 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.foundation.views.BaseFragment
+import com.example.foundation.views.BaseScreen
+import com.example.foundation.views.HasScreenTitle
+import com.example.foundation.views.screenViewModel
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentChangeColorBinding
-import com.example.myapplication.views.HasScreenTitle
-import com.example.myapplication.views.base.BaseFragment
-import com.example.myapplication.views.base.BaseScreen
-import com.example.myapplication.views.base.screenViewModel
+import com.example.myapplication.views.onTryAgain
+import com.example.myapplication.views.renderSimpleResult
+import kotlinx.coroutines.launch
 
 /**
- * Screen for changing color.
- * 1) Displays the list of available colors
- * 2) Allows choosing the desired color
- * 3) Chosen color is saved only after pressing "Save" button
- * 4) The current choice is saved via [SavedStateHandle] (see [ChangeColorViewModel])
+ * Экран для изменения цвета.
+ * 1) Отображает список доступных цветов
+ * 2) Позволяет выбрать нужный цвет
+ * 3) Выбранный цвет сохраняется только после нажатия кнопки "Сохранить"
+ * 4) Текущий выбор сохраняется через [SavedStateHandle] (см. [ChangeColorViewModel])
  */
 class ChangeColorFragment : BaseFragment(), HasScreenTitle {
-
     /**
-     * This screen has 1 argument: color ID to be displayed as selected.
+     * Этот экран имеет 1 аргумент: идентификатор цвета,
+     * который будет отображаться как выбранный.
      */
     class Screen(
-        val currentColorId: Long
+        val currentColorId: Long,
     ) : BaseScreen
 
     override val viewModel by screenViewModel<ChangeColorViewModel>()
 
     /**
-     * Example of dynamic screen title
+     * Пример динамического заголовка экрана
      */
     override fun getScreenTitle(): String? = viewModel.screenTitle.value
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val binding = FragmentChangeColorBinding.inflate(inflater, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        val binding = FragmentChangeColorBinding.inflate(
+            inflater, container, false
+        )
 
         val adapter = ColorsAdapter(viewModel)
         setupLayoutManager(binding, adapter)
@@ -46,27 +58,55 @@ class ChangeColorFragment : BaseFragment(), HasScreenTitle {
         binding.saveButton.setOnClickListener { viewModel.onSavePressed() }
         binding.cancelButton.setOnClickListener { viewModel.onCancelPressed() }
 
-        viewModel.colorsList.observe(viewLifecycleOwner) {
-            adapter.items = it
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.viewState.collect { result ->
+                    renderSimpleResult(binding.root, result) { viewState ->
+
+                        adapter.items = viewState.colorsList
+                        // видимость кнопок
+                        binding.saveButton.visibility =
+                            if (viewState.showSaveButton) View.VISIBLE else View.INVISIBLE
+                        binding.cancelButton.visibility =
+                            if (viewState.showCancelButton) View.VISIBLE else View.INVISIBLE
+
+                        binding.saveProgressGroup.visibility =
+                            if (viewState.showSaveProgressBar) View.VISIBLE else View.GONE
+                        binding.saveProgressBar.progress = viewState.saveProgressPercentage
+                        binding.savingPercentageTextView.text = viewState.saveProgressPercentageMessage
+
+                    }
+                }
+            }
         }
+
         viewModel.screenTitle.observe(viewLifecycleOwner) {
-            // if screen title is changed -> need to notify activity about updates
+            // если заголовок экрана изменен -> необходимо уведомлять об обновлениях
             notifyScreenUpdates()
+        }
+
+        onTryAgain(binding.root) {
+            viewModel.tryAgain()
         }
 
         return binding.root
     }
 
-    private fun setupLayoutManager(binding: FragmentChangeColorBinding, adapter: ColorsAdapter) {
-        // waiting for list width
-        binding.colorsRecyclerView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+    private fun setupLayoutManager(
+        binding: FragmentChangeColorBinding,
+        adapter: ColorsAdapter,
+    ) {
+        // кол-во колонок от ширины списка
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object :
+            ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
-                binding.colorsRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                val width = binding.colorsRecyclerView.width
+                binding.root.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                val width = binding.root.width
                 val itemWidth = resources.getDimensionPixelSize(R.dimen.item_width)
                 val columns = width / itemWidth
                 binding.colorsRecyclerView.adapter = adapter
-                binding.colorsRecyclerView.layoutManager = GridLayoutManager(requireContext(), columns)
+                binding.colorsRecyclerView.layoutManager =
+                    GridLayoutManager(requireContext(), columns)
             }
         })
     }

@@ -1,38 +1,67 @@
 package com.example.myapplication.model.colors
 
 import android.graphics.Color
-import ua.cn.stu.simplemvvm.model.colors.ColorListener
-import ua.cn.stu.simplemvvm.model.colors.ColorsRepository
+import android.util.Log
+import com.example.foundation.model.coroutines.IoDispatcher
+import com.example.simplemvvm.model.colors.ColorListener
+import com.example.simplemvvm.model.colors.ColorsRepository
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 
 /**
  * Simple in-memory implementation of [ColorsRepository]
  */
-class InMemoryColorsRepository : ColorsRepository {
+class InMemoryColorsRepository(
+    private val ioDispatcher: IoDispatcher,
+) : ColorsRepository {
 
-    override var currentColor: NamedColor = AVAILABLE_COLORS[0]
-        set(value) {
-            if (field != value) {
-                field = value
-                listeners.forEach { it(value) }
+    private var currentColor: NamedColor = AVAILABLE_COLORS[0]
+    
+    private val currentColorFlow = MutableSharedFlow<NamedColor>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    override fun listenCurrentColor(): Flow<NamedColor> = currentColorFlow
+
+    override suspend fun getAvailableColors(): List<NamedColor> = withContext(ioDispatcher.value) {
+        delay(1000)
+        return@withContext AVAILABLE_COLORS
+    }
+
+    override suspend fun getById(id: Long): NamedColor = withContext(ioDispatcher.value) {
+        delay(100)
+        return@withContext AVAILABLE_COLORS.first { it.id == id }
+    }
+
+    override suspend fun getCurrentColor(): NamedColor = withContext(ioDispatcher.value) {
+        delay(1000)
+        return@withContext currentColor
+    }
+
+    override fun setCurrentColor(color: NamedColor): Flow<Int> = flow {
+        Log.d("LoG","work setCurrentColor")
+        if (currentColor != color) {
+            var progress = 0
+            while (progress < 100) {
+                progress += 2
+                delay(30)
+              //  if (progress > 60) throw IllegalStateException("Valhalla calling")
+                emit(progress)
             }
+            currentColor = color
+//            listeners.forEach { it(color) }
+            currentColorFlow.emit(color)
+        } else {
+            emit(100)
         }
+    }.flowOn(ioDispatcher.value)
 
-    private val listeners = mutableSetOf<ColorListener>()
-
-    override fun getAvailableColors(): List<NamedColor> = AVAILABLE_COLORS
-
-    override fun addListener(listener: ColorListener) {
-        listeners += listener
-        listener(currentColor)
-    }
-
-    override fun removeListener(listener: ColorListener) {
-        listeners -= listener
-    }
-
-    override fun getById(id: Long): NamedColor {
-        return AVAILABLE_COLORS.first { it.id == id }
-    }
 
     companion object {
         private val AVAILABLE_COLORS = listOf(

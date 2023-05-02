@@ -1,38 +1,32 @@
-package ua.cn.stu.simplemvvm.model.colors
+package  com.example.simplemvvm.model.colors
 
-import com.example.myapplication.model.Repository
+import com.example.foundation.model.Repository
 import com.example.myapplication.model.colors.NamedColor
+import kotlinx.coroutines.flow.Flow
 
 typealias ColorListener = (NamedColor) -> Unit
 
-/**
- * Repository interface example.
- *
- * Provides access to the available colors and current selected color.
- */
 interface ColorsRepository : Repository {
 
-    var currentColor: NamedColor
+    /**
+     * Получить список всех доступных цветов, которые может выбрать пользователь.
+     */
+    suspend fun getAvailableColors(): List<NamedColor>
 
     /**
-     * Get the list of all available colors that may be chosen by the user.
+     * Получить цветовое содержимое по его идентификатору
      */
-    fun getAvailableColors(): List<NamedColor>
+    suspend fun getById(id: Long): NamedColor
 
     /**
-     * Get the color content by its ID
+     * Получить текущий выбранный цвет.
      */
-    fun getById(id: Long): NamedColor
+    suspend fun getCurrentColor(): NamedColor
 
     /**
-     * Listen for the current color changes.
-     * The listener is triggered immediately with the current value when calling this method.
+     * Установите указанный цвет в качестве текущего.
      */
-    fun addListener(listener: ColorListener)
+    fun setCurrentColor(color: NamedColor):Flow<Int>
 
-    /**
-     * Stop listening for the current color changes
-     */
-    fun removeListener(listener: ColorListener)
-
+   fun listenCurrentColor():Flow<NamedColor>
 }
